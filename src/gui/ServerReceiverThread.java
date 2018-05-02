@@ -1,8 +1,5 @@
 package gui;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import model.TicTacToeServer;
 
 /**
@@ -21,10 +18,7 @@ public class ServerReceiverThread extends Thread{
     public void run() {
         try {
             t.receive();
-        } catch (IOException ex) {
-            Logger.getLogger(ServerReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
         }
     }
     

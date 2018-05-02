@@ -11,6 +11,5 @@ public interface ClientListener {
     public void gameWon();
     public void gameLost();
     public void gameStale();
-
     public void close();
 }

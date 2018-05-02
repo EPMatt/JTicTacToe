@@ -10,7 +10,6 @@ public class DisconnectionMessage extends Message{
     
     public DisconnectionMessage(byte purpose) {
     super(Message.DISCONNECTION, purpose);
-        System.out.println("called ctor with purpose= "+purpose);
     }
     public DisconnectionMessage(byte[] buf){
         super(buf);

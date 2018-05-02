@@ -4,10 +4,8 @@ import gui.ServerGUI;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Vector;
 import message.BoardUpdateMessage;
@@ -64,16 +62,13 @@ public class TicTacToeServer {
 
     public void receive() throws IOException, InterruptedException {
         DatagramPacket p = new DatagramPacket(new byte[Message.MSG_SIZE], Message.MSG_SIZE);
-        System.out.println("waiting for packets...");
         consolePrint("(Server) - Waiting for packets...\n");
         serverSocket.receive(p);
         Message inMsg = new Message(p.getData());
-        System.out.println("received a packet!!");
         if (inMsg.type == Message.CONNECTION) {  //connection request
             ConnectionMessage outMsg = new ConnectionMessage(Message.RESPONSE);
             consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "connection request.\n");
             Client c = new Client(p.getAddress(), p.getPort());
-            System.out.println("packet port: " + p.getPort());
             if (activeClients < maxClients) {
                 outMsg.setSuccessful();
                 consolePrint("(Server) - Connection Accepted, checking for opponent...\n");
@@ -89,12 +84,10 @@ public class TicTacToeServer {
                     //find second client
                     if ((player2 = getFreeClient()) != null) {
                         consolePrint("(Server) - Free opponent found!\n");
-                        System.out.println("Starting a game!");
                         //if both searches are x success create game
                         id++;
                         player1.setGameId(id);
                         player2.setGameId(id);
-                        System.out.println("Adding game with p1=" + player1 + ",p2=" + player2 + ", id=" + id);
                         consolePrint("(Server) - Game started: id=" + id + " X player= [" + player1.ip + ":" + player1.port + "] O player= [" + player2.ip + ":" + player2.port + "]\n");
                         addGame(new Game(player1, player2, id));
                         activeGames++;
@@ -116,8 +109,7 @@ public class TicTacToeServer {
             }
         } else if (inMsg.type == Message.TICK) {    //tick cell request
             TickCellMessage outMsg = new TickCellMessage(Message.RESPONSE), tickInMsg = new TickCellMessage(inMsg.getBuf());
-            System.out.print("tick cell request");
-            int requestId = getClientByAddress(p.getAddress(), p.getPort()).getGameId();
+            int requestId =getClientByAddress(p.getAddress(), p.getPort()).getGameId();
             if (requestId == -1) {
                 outMsg.setAsError();
             } else {
@@ -125,16 +117,14 @@ public class TicTacToeServer {
                 byte cell = tickInMsg.getRequiredCell();
                 char symbol = getClientByAddress(p.getAddress(), p.getPort()).getSymbol();
                 consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "(" + requestId + ")Tick cell request: cell= " + cell + " symbol= " + symbol + "\n");
-                System.out.println("requested.getTurn()=" + requested.getTurn());
                 if (requested != null && requested.getTurn() == symbol) {
                     requested.tick(cell);
-                    consolePrint("(Server) - Cell ticked!");
+                    consolePrint("(Server) - Cell ticked!\n");
                     outMsg.setSuccessful();
                 } else {
                     outMsg.setAsError();
                 }
                 send(p.getAddress(), p.getPort(), outMsg);
-                System.out.println("sent tick cell confirmation");
                 checkGameStatus(requested);
                 sendBoardUpdate(requested, 'X');
                 sendBoardUpdate(requested, 'O');
@@ -149,12 +139,11 @@ public class TicTacToeServer {
             }
         } else if (inMsg.type == Message.BOARD_UPDATE) {    //game board request
             BoardUpdateMessage outMsg = new BoardUpdateMessage(Message.RESPONSE);
-            System.out.println("game board request");
             consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "(" + id + ")Game board request\n");
             int requestId = getClientByAddress(p.getAddress(), p.getPort()).getGameId();
             Game requested = getGameById(requestId);
             if (requested != null) {
-                char toSendUpdate = (requested.x.ip == p.getAddress() && requested.x.port == p.getPort()) ? 'X' : 'O';
+                char toSendUpdate = (requested.x.ip.equals( p.getAddress()) && requested.x.port == p.getPort()) ? 'X' : 'O';
                 sendBoardUpdate(requested, toSendUpdate);
             } else {
                 outMsg.setAsError();
@@ -168,8 +157,8 @@ public class TicTacToeServer {
             DisconnectionMessage outMsg = new DisconnectionMessage(Message.RESPONSE);
             outMsg.setSuccessful();
             send(p.getAddress(), p.getPort(), outMsg);
-            consolePrint("(Server) - Sent successfull disconection response to [" + p.getAddress() + ":" + p.getPort() + "]");
-            char toSendDisconnectionUpdate = (requested.x.ip == p.getAddress() && requested.x.port == p.getPort()) ? 'X' : 'O';
+            consolePrint("(Server) - Sent successful disconnection response to [" + p.getAddress() + ":" + p.getPort() + "]\n");
+            char toSendDisconnectionUpdate = (requested.x.ip.equals( p.getAddress()) && requested.x.port == p.getPort()) ? 'O' : 'X';
             sendBoardUpdate(requested, toSendDisconnectionUpdate);
             requested.x.setInactive();
             requested.o.setInactive();
@@ -237,12 +226,10 @@ public class TicTacToeServer {
     }
 
     private void consolePrint(String string) {
-        System.out.println("tris server consoleprint exec by " + Thread.currentThread());
         serverGui.consolePrint(string);
     }
 
     private void send(InetAddress ip, int port, Message m) throws IOException {
-        System.out.println("sending..." + Arrays.toString(m.getBuf()));
         serverSocket.send(new DatagramPacket(m.getBuf(), Message.MSG_SIZE, ip, port));
     }
 

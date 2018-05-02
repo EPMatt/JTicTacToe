@@ -4,9 +4,6 @@ import model.Client;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import model.Game;
 import model.ServerListener;
@@ -265,7 +262,6 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
 
     @Override
     public void consolePrint(String s) {
-        System.out.println("consoleprint exec by "+Thread.currentThread());
         jTextArea1.append(s);
         jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength()); //autoscroll
     }

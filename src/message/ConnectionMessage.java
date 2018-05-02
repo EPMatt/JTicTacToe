@@ -12,7 +12,6 @@ public class ConnectionMessage extends Message{
     
     public ConnectionMessage(byte purpose) {
     super(Message.CONNECTION, purpose);
-        System.out.println("called ctor with purpose= "+purpose);
     }
     public ConnectionMessage(byte[] buf){
         super(buf);

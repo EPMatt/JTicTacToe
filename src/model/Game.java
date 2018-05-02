@@ -1,6 +1,5 @@
 package model;
 import java.util.Arrays;
-import model.Client;
 /**
  * JTicTacToe - Game : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
  * or as an UDP client which can be used to play a TicTacToe game over a network.
@@ -42,15 +41,14 @@ public class Game {
     }
     public char getGameStatus(){
         char w='R';
-        //TODO application logic here
         byte ticked=0;
         for(char c:board){
             if(c!=0) ticked++;
         }
-        if(!active) w='D';
-        else if(isWinner('X')) w='X';    //X: winner x
+        if(isWinner('X')) w='X';    //X: winner x
         else if(isWinner('O')) w='O';  //O: winner o
         else if(ticked==9) w='S';  //S: stale
+        else if(!active) w='D';
         //else R: still running
         return w;
     }

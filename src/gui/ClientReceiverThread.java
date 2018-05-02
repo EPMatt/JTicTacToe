@@ -1,8 +1,6 @@
 package gui;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import model.TicTacToeClient;
 
 /**
@@ -23,18 +21,18 @@ public class ClientReceiverThread extends Thread {
     @Override
     public void run() {
         try {
-            if(op==0){
-                t.getBoardUpdate();
-                if(t.getGameStatus()=='R')t.waitForUpdates();
-            }
-            else if(op==1){
-                if(t.getGameStatus()=='R') t.waitForUpdates();
-            }else if (op==2){
-                if(t.getGameStatus()=='R') t.waitForUpdates();
-                if(t.getGameStatus()=='R') t.waitForUpdates();
+            switch (op) {
+                case 1:
+                    if(t.getGameStatus()=='R') t.waitForUpdates();
+                    break;
+                case 2:
+                    if(t.getGameStatus()=='R') t.waitForUpdates();
+                    if(t.getGameStatus()=='R') t.waitForUpdates();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown receiver operation!");
             }
         } catch (IOException ex) {
-            Logger.getLogger(ClientReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

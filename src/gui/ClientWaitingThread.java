@@ -1,8 +1,6 @@
 package gui;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import model.ClientGUIListener;
 import model.TicTacToeClient;
 
@@ -27,7 +25,6 @@ public class ClientWaitingThread extends Thread {
               if(t.waitForOpponent())l.opponentFound();
               else l.errorInFindingOpponent();
           } catch (IOException ex) {
-              Logger.getLogger(ClientWaitingThread.class.getName()).log(Level.SEVERE, null, ex);
           }
     }
     

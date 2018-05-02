@@ -1,11 +1,9 @@
 package model;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Arrays;
 import message.BoardUpdateMessage;
 import message.ConnectionMessage;
 import message.DisconnectionMessage;
@@ -39,19 +37,12 @@ public class TicTacToeClient {
         for (int i = 0; i < 65536; i++) {
             try {
                 clientSocket = new DatagramSocket(i);
-                System.out.println("Porta libera" + i);
                 break;
-            } catch (BindException e) {
-                System.out.println("porta già in uso");
             } catch (Exception e) {
-                System.out.println(e);
             }
         }
         clientSocket.connect(ip, serverPort);
         me = new Client(clientSocket.getLocalAddress(), clientSocket.getLocalPort());
-        System.out.println("Client port =" + me.port);
-        System.out.println("Server port= " + serverPort);
-        System.out.println("Server IP= " + serverIp);
         turn = 'X';
         status = 'R';
     }
@@ -59,11 +50,7 @@ public class TicTacToeClient {
     public boolean connect() throws IOException {
         ConnectionMessage outMsg = new ConnectionMessage(Message.REQUEST);
         send(outMsg);
-        System.out.println("sending conn request to " + serverIp + ":" + serverPort);
-        System.out.println("clientSocket: " + clientSocket);
-        System.out.println("waiting for server response...");
         Message inMsg = receiveConnectionMessageFromServer();
-        System.out.println("received from server!");
         if (inMsg.isSuccessful()) {
             return true;
         }
@@ -72,7 +59,6 @@ public class TicTacToeClient {
 
     public boolean waitForOpponent() throws IOException {
         ConnectionMessage inMsg = receiveConnectionMessageFromServer();
-        System.out.println("waiting for opponent...received from server!");
         if (inMsg.purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
             me.setGameId(inMsg.getGameId());
             me.setSymbol(inMsg.getSymbol());
@@ -86,7 +72,6 @@ public class TicTacToeClient {
         send(outMsg);
         BoardUpdateMessage inMsg = new BoardUpdateMessage(receiveBoardUpdateMessageFromServer().getBuf());
         if (inMsg.getStatus() == 'D') {
-            System.out.println("opponent quitted, bye!");
             listener.close();
         } else {
             updateTableFromBuffer(inMsg);
@@ -94,11 +79,8 @@ public class TicTacToeClient {
     }
 
     public void waitForUpdates() throws IOException {
-        System.out.println("it's not my turn, i'm waiting for updates...");
         BoardUpdateMessage inMsg = new BoardUpdateMessage(receiveBoardUpdateMessageFromServer().getBuf());
-        System.out.println("Hey! i received an update from the server!");
         if (inMsg.getStatus() == 'D') {
-            System.out.println("opponent quitted, bye!");
             listener.close();
         } else {
             nextTurn();
@@ -109,22 +91,14 @@ public class TicTacToeClient {
 
     private void updateTableFromBuffer(BoardUpdateMessage msg) {
         board = msg.getBoard();
-        System.out.println("the board i received is " + msg.getBoard());
         listener.boardUpdated();
         status = (char) msg.getStatus();
         if (status == me.getSymbol()) {
-            System.out.println("I WON");
             listener.gameWon();
         } else if (status == 'X' && me.getSymbol() == 'O' || status == 'O' && me.getSymbol() == 'X') {
-            System.out.println("I LOST");
             listener.gameLost();
         } else if (status == 'S') {
-            System.out.println("STALE");
             listener.gameStale();
-        } else if (status == 'R') {
-            System.out.println("WERE STILL RUNNING");
-        } else {
-            System.out.println("ERROR IN GAME STATUS");
         }
     }
 
@@ -137,16 +111,12 @@ public class TicTacToeClient {
     }
 
     public void tick(int cell) throws IOException {
-        System.out.println("TrisClient: ticking cell " + cell);
         TickCellMessage outMsg = new TickCellMessage(Message.REQUEST);
         outMsg.setCell((byte) cell);
         send(outMsg);
         TickCellMessage inMsg = receiveTickCellMessageFromServer();
-        System.out.println("after ticking received: " + Arrays.toString(inMsg.getBuf()));
-        if (inMsg.isSuccessful()) {
-            System.out.println("tick successfull!");
-        } else {
-            System.out.println("tick Error!");
+        if (!inMsg.isSuccessful()) {
+            throw new IllegalStateException("Tick error!");
         }
     }
 

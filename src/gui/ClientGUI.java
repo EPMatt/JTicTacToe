@@ -3,16 +3,17 @@ package gui;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import model.ClientListener;
 import model.TicTacToeClient;
 
 /**
- * JTicTacToe - ClientGUI : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
- * or as an UDP client which can be used to play a TicTacToe game over a network.
+ * JTicTacToe - ClientGUI : Assignment for Java course. This application can
+ * work as an UDP server which can handle multiple TicTacToe games
+ * simultaneously, or as an UDP client which can be used to play a TicTacToe
+ * game over a network.
+ *
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
@@ -22,12 +23,12 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
      * Creates new form ClientGUI
      */
     public ClientGUI(TicTacToeClient t) throws Exception {
-        this.t=t;
+        this.t = t;
         this.addWindowListener(this);
         initComponents();
         t.setClientListener(this);
         boardUpdated();
-        if(!t.isMyTurn()){
+        if (!t.isMyTurn()) {
             new ClientReceiverThread(t, 1).start();
         }
     }
@@ -197,43 +198,43 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-   tick(0);         
+        tick(0);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-     tick(1);
+        tick(1);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-      tick(2);
+        tick(2);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-     tick(3);
+        tick(3);
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-    tick(4);
+        tick(4);
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-      tick(5);
+        tick(5);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-      tick(6);
+        tick(6);
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-       tick(7);
-         
+        tick(7);
+
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-       tick(8);
+        tick(8);
     }//GEN-LAST:event_jButton9ActionPerformed
 
-  
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -247,38 +248,40 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
     private TicTacToeClient t;
+
     @Override
     public void boardUpdated() {
-       jButton1.setText(""+t.getBoardAt(0));
-       jButton2.setText(""+t.getBoardAt(1));
-       jButton3.setText(""+t.getBoardAt(2));
-       jButton4.setText(""+t.getBoardAt(3));
-       jButton5.setText(""+t.getBoardAt(4));
-       jButton6.setText(""+t.getBoardAt(5));
-       jButton7.setText(""+t.getBoardAt(6));
-       jButton8.setText(""+t.getBoardAt(7));
-       jButton9.setText(""+t.getBoardAt(8));
-       jLabel1.setText("My Symbol: "+t.getMe().getSymbol()+" Turn Of: "+t.getTurn());
+        jButton1.setText("" + t.getBoardAt(0));
+        jButton2.setText("" + t.getBoardAt(1));
+        jButton3.setText("" + t.getBoardAt(2));
+        jButton4.setText("" + t.getBoardAt(3));
+        jButton5.setText("" + t.getBoardAt(4));
+        jButton6.setText("" + t.getBoardAt(5));
+        jButton7.setText("" + t.getBoardAt(6));
+        jButton8.setText("" + t.getBoardAt(7));
+        jButton9.setText("" + t.getBoardAt(8));
+        jLabel1.setText("My Symbol: " + t.getMe().getSymbol() + " Turn Of: " + t.getTurn());
     }
 
     @Override
     public void gameWon() {
-        jLabel1.setText(jLabel1.getText()+" You've Won!");
+        jLabel1.setText(jLabel1.getText() + " You've Won!");
         lockButtons();
     }
 
     @Override
     public void gameLost() {
-       jLabel1.setText(jLabel1.getText()+" You've Lost!");
-       lockButtons();
+        jLabel1.setText(jLabel1.getText() + " You've Lost!");
+        lockButtons();
     }
 
     @Override
     public void gameStale() {
-        jLabel1.setText(jLabel1.getText()+" Stale!");
+        jLabel1.setText(jLabel1.getText() + " Stale!");
         lockButtons();
     }
-    public void lockButtons(){
+
+    public void lockButtons() {
         jButton1.setEnabled(false);
         jButton2.setEnabled(false);
         jButton3.setEnabled(false);
@@ -289,31 +292,30 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
         jButton8.setEnabled(false);
         jButton9.setEnabled(false);
     }
-    public void tick(int cell){
-         if(t.isMyTurn()){
-           try {
-               t.tick(cell);
-           } catch (IOException ex) {
-               Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
-           }
-           new ClientReceiverThread(t,2).start();
-       }
+
+    public void tick(int cell) {
+        if (t.isMyTurn()) {
+            try {
+                t.tick(cell);
+            } catch (IOException ex) {
+                Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            new ClientReceiverThread(t, 2).start();
+        }
     }
 
     @Override
     public void windowOpened(WindowEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
     }
 
     @Override
     public void windowClosing(WindowEvent e) {
-        System.out.println("closing windows!!!");
-        if(jButton5.isEnabled()){   //check if buttons are locked
-        try {
-            if(!t.disconnectFromServer()) throw new Exception();
-        } catch (IOException ex) {
-        } catch (Exception ex) {
-        }
+        if (jButton5.isEnabled()) {   //check if buttons are locked
+            try {
+                if (!t.disconnectFromServer()) throw new Exception();
+            } catch (Exception ex) {
+            }
         }
     }
 
