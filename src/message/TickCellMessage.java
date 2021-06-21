@@ -9,11 +9,11 @@ package message;
 public class TickCellMessage extends Message{
     public static final int INDEX_CELL=2;
     public TickCellMessage(byte purpose) {
-        super(Message.TICK, purpose);
+        super(Message.Type.TICK, purpose);
     }
      public TickCellMessage(byte[] buf){
         super(buf);
-        if(type!=Message.TICK)throw new ClassCastException();
+        if(Message.Type.fromCode(type)!=Message.Type.TICK)throw new ClassCastException();
     }
     public void setCell(byte cell){
         if(purpose==Message.REQUEST) buf[INDEX_CELL]=cell;

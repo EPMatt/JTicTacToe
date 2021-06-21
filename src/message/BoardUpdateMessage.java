@@ -12,11 +12,11 @@ public class BoardUpdateMessage extends Message {
     public static final int INDEX_STATUS=11;
     public static final int INDEX_BOARD=2;
     public BoardUpdateMessage(byte purpose) {
-        super(Message.BOARD_UPDATE, purpose);
+        super(Message.Type.BOARD_UPDATE, purpose);
     }
  public BoardUpdateMessage(byte[] buf){
         super(buf);
-        if(type!=Message.BOARD_UPDATE)throw new ClassCastException();
+        if(Message.Type.fromCode(type)!=Message.Type.BOARD_UPDATE)throw new ClassCastException();
     }
     public void setBoard(char[] board) {
         if (purpose == Message.RESPONSE) {

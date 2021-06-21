@@ -5,16 +5,40 @@ import java.util.Arrays;
 /**
  * JTicTacToe - Message : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
  * or as an UDP client which can be used to play a TicTacToe game over a network.
+ *
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
 public class Message {
 
+    public enum Type {
+        CONNECTION((byte) 0),
+        TICK((byte) 1),
+        BOARD_UPDATE((byte) 2),
+        DISCONNECTION((byte) 3);
+
+        private byte code;
+
+        Type(byte code) {
+            this.code = code;
+        }
+
+        public byte getCode() {
+            return code;
+        }
+
+        public static Type fromCode(byte code) {
+            for (Type e : Type.values()) {
+                if (code == e.code) return e;
+            }
+            throw new IllegalArgumentException("No message type with code (" + code + ") found");
+        }
+
+        public static Type fromCode(int code) {
+            return fromCode((byte) code);
+        }
+    }
     public static final int MSG_SIZE = 13;
-    public static final byte CONNECTION = 0;
-    public static final byte TICK = 1;
-    public static final byte BOARD_UPDATE = 2;
-    public static final byte DISCONNECTION=3;
     public static final byte REQUEST = 0;
     public static final byte RESPONSE = 1;
     public static final byte CONNECTION_APPROVAL_RESPONSE = 2;
@@ -23,16 +47,16 @@ public class Message {
     public final byte purpose;
 
     public Message(byte[] buf) {
-        this(buf[0], buf[1]);
+        this(Type.fromCode(buf[0]), buf[1]);
         this.buf = buf;
     }
 
-    public Message(int type, byte purpose) {
+    public Message(Type type, byte purpose) {
         this.buf = new byte[MSG_SIZE];
-        this.type = type;
-        buf[0] = (byte) type;
+        this.type = type.getCode();
+        buf[0] = (byte) this.type;
         this.purpose = purpose;
-        buf[1]=this.purpose;
+        buf[1] = this.purpose;
     }
 
     public void setAsError() {
@@ -53,7 +77,8 @@ public class Message {
     public byte[] getBufByReference() {
         return buf;
     }
-    public boolean isSuccessful(){
-        return buf[12]==1;
+
+    public boolean isSuccessful() {
+        return buf[12] == 1;
     }
 }

@@ -152,25 +152,19 @@ public class TicTacToeClient {
 
     private BoardUpdateMessage receiveBoardUpdateMessageFromServer() throws IOException {
         Message t = receiveFromServer();
-        if (t.type != Message.BOARD_UPDATE) {
-            throw new IOException();
-        }
+        checkMessageType(t, Message.Type.BOARD_UPDATE);
         return new BoardUpdateMessage(t.getBuf());
     }
 
     private ConnectionMessage receiveConnectionMessageFromServer() throws IOException {
         Message t = receiveFromServer();
-        if (t.type != Message.CONNECTION) {
-            throw new IOException();
-        }
+        checkMessageType(t, Message.Type.CONNECTION);
         return new ConnectionMessage(t.getBuf());
     }
 
     private TickCellMessage receiveTickCellMessageFromServer() throws IOException {
         Message t = receiveFromServer();
-        if (t.type != Message.TICK) {
-            throw new IOException();
-        }
+        checkMessageType(t, Message.Type.TICK);
         return new TickCellMessage(t.getBuf());
     }
 
@@ -180,5 +174,10 @@ public class TicTacToeClient {
         DisconnectionMessage resp = new DisconnectionMessage(receiveFromServer().getBuf());
         return resp.isSuccessful();
 
+    }
+
+
+    private void checkMessageType(Message m, Message.Type t) throws IOException{
+        if(Message.Type.fromCode(m.type)!=t) throw new IOException();
     }
 }

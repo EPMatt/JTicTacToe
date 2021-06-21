@@ -11,11 +11,11 @@ public class ConnectionMessage extends Message{
     public static final int INDEX_SYMBOL=6;
     
     public ConnectionMessage(byte purpose) {
-    super(Message.CONNECTION, purpose);
+    super(Message.Type.CONNECTION, purpose);
     }
     public ConnectionMessage(byte[] buf){
         super(buf);
-        if(type!=Message.CONNECTION)throw new ClassCastException();
+        if(Message.Type.fromCode(type)!=Message.Type.CONNECTION)throw new ClassCastException();
     }
     public void setGameId(int id){
         if(purpose==Message.CONNECTION_APPROVAL_RESPONSE){
@@ -27,6 +27,7 @@ public class ConnectionMessage extends Message{
     }
     public int getGameId(){
         if(purpose==Message.CONNECTION_APPROVAL_RESPONSE){
+            return Utils.
             return buf[INDEX_ID]>>24|buf[INDEX_ID+1]>>16|buf[INDEX_ID+2]>>8|buf[INDEX_ID+3];
         }else throw new UnsupportedOperationException();
     }

@@ -7,13 +7,13 @@ package message;
  * @version 1.0.0
  */
 public class DisconnectionMessage extends Message{
-    
+
     public DisconnectionMessage(byte purpose) {
-    super(Message.DISCONNECTION, purpose);
+    super(Message.Type.DISCONNECTION, purpose);
     }
     public DisconnectionMessage(byte[] buf){
         super(buf);
-        if(type!=Message.DISCONNECTION)throw new ClassCastException();
+        if(Message.Type.fromCode(type)!=Message.Type.DISCONNECTION)throw new ClassCastException();
     }
-    
+
 }
