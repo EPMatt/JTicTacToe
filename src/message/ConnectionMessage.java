@@ -1,4 +1,7 @@
 package message;
+import common.Utils;
+
+import java.util.Arrays;
 
 /**
  * JTicTacToe - ConnectionMessage : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
@@ -9,7 +12,7 @@ package message;
 public class ConnectionMessage extends Message{
     public static final int INDEX_ID=2;
     public static final int INDEX_SYMBOL=6;
-    
+
     public ConnectionMessage(byte purpose) {
     super(Message.Type.CONNECTION, purpose);
     }
@@ -19,16 +22,12 @@ public class ConnectionMessage extends Message{
     }
     public void setGameId(int id){
         if(purpose==Message.CONNECTION_APPROVAL_RESPONSE){
-            buf[INDEX_ID]=(byte)(id<<24);
-            buf[INDEX_ID+1]=(byte)(id<<16);
-            buf[INDEX_ID+2]=(byte)(id<<8);
-            buf[INDEX_ID+3]=(byte)id;
+            System.arraycopy(Utils.toByteArray(id),0,buf,INDEX_ID,4);
         }else throw new UnsupportedOperationException();
     }
     public int getGameId(){
         if(purpose==Message.CONNECTION_APPROVAL_RESPONSE){
-            return Utils.
-            return buf[INDEX_ID]>>24|buf[INDEX_ID+1]>>16|buf[INDEX_ID+2]>>8|buf[INDEX_ID+3];
+            return Utils.byteArrayToInt(Arrays.copyOfRange(buf,INDEX_ID,INDEX_ID+4));
         }else throw new UnsupportedOperationException();
     }
     public void setSymbol(char symbol){
