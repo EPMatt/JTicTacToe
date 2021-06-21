@@ -128,7 +128,7 @@ public class TicTacToeServer {
                 checkGameStatus(requested);
                 sendBoardUpdate(requested, 'X');
                 sendBoardUpdate(requested, 'O');
-                if (requested.getGameStatus() != 'R') {
+                if (requested.getGameStatus() != Game.Status.RUNNING) {
                     requested.x.setInactive();
                     requested.o.setInactive();
                     activeClients -= 2;
@@ -183,15 +183,15 @@ public class TicTacToeServer {
     }
 
     private void checkGameStatus(Game g) {   //manca controllo disattivazione giocatori!!
-        char status = g.getGameStatus();
-        if (status == 'R') {
+        Game.Status status = g.getGameStatus();
+        if (status == Game.Status.RUNNING) {
             consolePrint("\tGame(" + g.id + ") status: RUNNING\n");
         } else {
-            if (status == 'S') {
+            if (status == Game.Status.STALE) {
                 consolePrint("\tGame(" + g.id + ") status: STALE\n");
-            } else if (status == 'X') {
+            } else if (status == Game.Status.WINNER_X) {
                 consolePrint("\tGame(" + g.id + ") status: PLAYER X WON\n");
-            } else if (status == 'O') {
+            } else if (status == Game.Status.WINNER_O) {
                 consolePrint("\tGame(" + g.id + ") status: PLAYER O WON\n");
             }
         }
@@ -200,7 +200,7 @@ public class TicTacToeServer {
     private void sendBoardUpdate(Game g, char c) throws IOException {
         BoardUpdateMessage outMsg = new BoardUpdateMessage(Message.RESPONSE);
         outMsg.setBoard(g.getBoard());
-        outMsg.setStatus(g.getGameStatus());
+        outMsg.setStatus(g.getGameStatus().getCode());
         Client toSend = (c == 'X') ? g.x : g.o;
         send(toSend.ip, toSend.port, outMsg);
         consolePrint("(Server) - Sent a board update to " + c + " \n");

@@ -224,7 +224,7 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
                }      //game has not been added yet by the thread, but id is set
                else{
                Game g=t.getGameAt(t.indexOfGame(c.getGameId()));
-               char gameStatus=g.getGameStatus();
+               char gameStatus=g.getGameStatus().getCode();
                if(gameStatus=='R') status="Playing";
                else if(gameStatus=='S') status="Game Ended: Stale";
                else if(gameStatus==c.getSymbol()) status="Game Ended: Victory";
@@ -240,11 +240,11 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
          Game g=t.getGameAt(i);
          String status;
          switch(g.getGameStatus()){
-             case 'R': status="Running"; break;
-             case 'X': status="Player X Won"; break;
-             case 'O': status="Player O Won"; break;
-             case 'S': status="Stale"; break;
-             case 'D': status="Opponents disconnected"; break;
+             case RUNNING: status="Running"; break;
+             case WINNER_X: status="Player X Won"; break;
+             case WINNER_O: status="Player O Won"; break;
+             case STALE: status="Stale"; break;
+             case DRAW: status="Opponents disconnected"; break;
              default: status=""; break;
          }
             model2.addRow(new Object[]{g.id, g.x,g.o,status});
