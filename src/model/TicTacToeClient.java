@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+
 import message.BoardUpdateMessage;
 import message.ConnectionMessage;
 import message.DisconnectionMessage;
@@ -13,6 +14,7 @@ import message.TickCellMessage;
 /**
  * JTicTacToe - TicTacToeClient : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
  * or as an UDP client which can be used to play a TicTacToe game over a network.
+ *
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
@@ -70,7 +72,7 @@ public class TicTacToeClient {
     public void getBoardUpdate() throws IOException {
         BoardUpdateMessage outMsg = new BoardUpdateMessage(Message.REQUEST);
         send(outMsg);
-        BoardUpdateMessage inMsg = new BoardUpdateMessage(receiveBoardUpdateMessageFromServer().getBuf());
+        BoardUpdateMessage inMsg = receiveBoardUpdateMessageFromServer();
         if (inMsg.getStatus() == 'D') {
             listener.close();
         } else {
@@ -79,7 +81,7 @@ public class TicTacToeClient {
     }
 
     public void waitForUpdates() throws IOException {
-        BoardUpdateMessage inMsg = new BoardUpdateMessage(receiveBoardUpdateMessageFromServer().getBuf());
+        BoardUpdateMessage inMsg = receiveBoardUpdateMessageFromServer();
         if (inMsg.getStatus() == 'D') {
             listener.close();
         } else {
@@ -176,8 +178,8 @@ public class TicTacToeClient {
 
     }
 
-
-    private void checkMessageType(Message m, Message.Type t) throws IOException{
-        if(Message.Type.fromCode(m.type)!=t) throw new IOException();
+    private void checkMessageType(Message m, Message.Type t) throws IOException {
+        if (m.type != t) throw new IOException();
     }
+
 }

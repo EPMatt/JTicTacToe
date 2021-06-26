@@ -65,7 +65,7 @@ public class TicTacToeServer {
         consolePrint("(Server) - Waiting for packets...\n");
         serverSocket.receive(p);
         Message inMsg = new Message(p.getData());
-        if (Message.Type.fromCode(inMsg.type) == Message.Type.CONNECTION) {  //connection request
+        if (inMsg.type == Message.Type.CONNECTION) {  //connection request
             ConnectionMessage outMsg = new ConnectionMessage(Message.RESPONSE);
             consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "connection request.\n");
             Client c = new Client(p.getAddress(), p.getPort());
@@ -107,7 +107,7 @@ public class TicTacToeServer {
                 outMsg.setAsError();
                 send(p.getAddress(), p.getPort(), outMsg);
             }
-        } else if (Message.Type.fromCode(inMsg.type) == Message.Type.TICK) {    //tick cell request
+        } else if (inMsg.type== Message.Type.TICK) {    //tick cell request
             TickCellMessage outMsg = new TickCellMessage(Message.RESPONSE), tickInMsg = new TickCellMessage(inMsg.getBuf());
             int requestId =getClientByAddress(p.getAddress(), p.getPort()).getGameId();
             if (requestId == -1) {
@@ -137,7 +137,7 @@ public class TicTacToeServer {
                     cleanLists();
                 }
             }
-        } else if (Message.Type.fromCode(inMsg.type) == Message.Type.BOARD_UPDATE) {    //game board request
+        } else if (inMsg.type == Message.Type.BOARD_UPDATE) {    //game board request
             BoardUpdateMessage outMsg = new BoardUpdateMessage(Message.RESPONSE);
             consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "(" + id + ")Game board request\n");
             int requestId = getClientByAddress(p.getAddress(), p.getPort()).getGameId();
@@ -149,7 +149,7 @@ public class TicTacToeServer {
                 outMsg.setAsError();
                 send(p.getAddress(), p.getPort(), outMsg);
             }
-        } else if (Message.Type.fromCode(inMsg.type) == Message.Type.DISCONNECTION) {
+        } else if (inMsg.type == Message.Type.DISCONNECTION) {
             int requestId = getClientByAddress(p.getAddress(), p.getPort()).getGameId();
             consolePrint("[" + p.getAddress() + ":" + p.getPort() + "] - " + "(" + id + ")Disconnection request\n");
             Game requested = getGameById(requestId);
