@@ -1,10 +1,12 @@
 package gui;
 
-import model.Client;
+import model.Player;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import javax.swing.table.DefaultTableModel;
+
 import model.Game;
 import model.ServerListener;
 import model.TicTacToeServer;
@@ -12,20 +14,21 @@ import model.TicTacToeServer;
 /**
  * JTicTacToe - ServerGUI : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
  * or as an UDP client which can be used to play a TicTacToe game over a network.
+ *
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
-public class ServerGUI extends javax.swing.JFrame implements ServerListener{
+public class ServerGUI extends javax.swing.JFrame implements ServerListener {
 
-    public ServerGUI(int port,int maxClients,boolean deleteOldClients,boolean deleteOldGames) throws SocketException, IOException {
+    public ServerGUI(int port, int maxClients) throws SocketException, IOException {
         initComponents();
         this.setVisible(true);
-        t=new TicTacToeServer(port,maxClients,deleteOldClients,deleteOldGames);
+        t = new TicTacToeServer(port, maxClients);
         t.setListener(this);
-        jLabel2.setText("Host/IP Address: "+InetAddress.getLocalHost());
-        jLabel3.setText("Port: "+t.serverPort);
+        jLabel2.setText("Host/IP Address: " + InetAddress.getLocalHost());
+        jLabel3.setText("Port: " + t.serverPort);
         consolePrint("(Server)Server is online\n");
-        packetReceived();
+        buildTable();
     }
 
     /**
@@ -54,7 +57,7 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
         jLabel8 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("JTris UDP - Server");
+        setTitle("JTris TCP - Server");
         setResizable(false);
 
         jLabel1.setText("Tris Server");
@@ -76,26 +79,26 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
         jLabel6.setText("0");
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "IP", "Port", "Status", "Game Id"
-            }
+                },
+                new String[]{
+                        "IP", "Port", "Status", "Game Id"
+                }
         ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
+            Class[] types = new Class[]{
+                    java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Integer.class
             };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
+            boolean[] canEdit = new boolean[]{
+                    false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return types[columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return canEdit[columnIndex];
             }
         });
         jScrollPane1.setViewportView(jTable1);
@@ -103,26 +106,26 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
         jTabbedPane1.addTab("Clients", jScrollPane1);
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+                new Object[][]{
 
-            },
-            new String [] {
-                "Id", "Player X", "Player O", "Status"
-            }
+                },
+                new String[]{
+                        "Id", "Player X", "Player O", "Status"
+                }
         ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            Class[] types = new Class[]{
+                    java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
+            boolean[] canEdit = new boolean[]{
+                    false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return types[columnIndex];
             }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+                return canEdit[columnIndex];
             }
         });
         jScrollPane3.setViewportView(jTable2);
@@ -136,54 +139,54 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 312, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addGap(88, 88, 88)
-                        .addComponent(jLabel3)
-                        .addGap(65, 65, 65))
-                    .addComponent(jScrollPane2)
-                    .addComponent(jTabbedPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(152, 152, 152)
-                                .addComponent(jLabel7)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jLabel1)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 312, Short.MAX_VALUE)
+                                                .addComponent(jLabel2)
+                                                .addGap(88, 88, 88)
+                                                .addComponent(jLabel3)
+                                                .addGap(65, 65, 65))
+                                        .addComponent(jScrollPane2)
+                                        .addComponent(jTabbedPane1)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel4)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addComponent(jLabel5)
+                                                                .addGap(18, 18, 18)
+                                                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(152, 152, 152)
+                                                                .addComponent(jLabel7)
+                                                                .addGap(18, 18, 18)
+                                                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jLabel1)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel3))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jLabel5)
+                                        .addComponent(jLabel6)
+                                        .addComponent(jLabel7)
+                                        .addComponent(jLabel8))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                                .addContainerGap())
         );
 
         pack();
@@ -212,52 +215,69 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
     public void clientListChanged() {
         buildTable();
     }
-    public void buildTable(){
+
+    public void buildTable() {
         DefaultTableModel model1 = (DefaultTableModel) jTable1.getModel();
         model1.setRowCount(0);
-        for(Client c:t.getClients()) {
-            String status="";
-            if(c.getGameId()==0) status="Waiting for opponent";
-            else{
-               if(t.getGamesNum()==0){
-                   status="Playing";
-               }      //game has not been added yet by the thread, but id is set
-               else{
-               Game g=t.getGameAt(t.indexOfGame(c.getGameId()));
-               char gameStatus=g.getGameStatus().getCode();
-               if(gameStatus=='R') status="Playing";
-               else if(gameStatus=='S') status="Game Ended: Stale";
-               else if(gameStatus==c.getSymbol()) status="Game Ended: Victory";
-               else if (gameStatus=='X'&&c.getSymbol()=='O'||gameStatus=='O'&&c.getSymbol()=='X') status="Game Ended: Loss";
-               else if(gameStatus=='D') status="Disconnected";
+        for (Player c : t.getClients()) {
+            String status = "";
+            if (!c.isActive()) status = "Waiting for opponent";
+            else {
+                if (t.getGamesNum() == 0) {
+                    status = "Playing";
+                }      //game has not been added yet by the thread, but id is set
+                else {
+                    Game g = c.getGame();
+                    switch (g.getGameStatus()) {
+                        case RUNNING -> status = "Playing";
+                        case STALE -> status = "Game Ended: Stale";
+                        case DRAW -> status = "Game Ended: Draw";
+                        case WINNER_O -> {
+                            if (g.getPlayerO().equals(c)) status = "Game Ended: Victory";
+                            else status = status = "Game Ended: Loss";
+                        }
+                        case WINNER_X -> {
+                            if (g.getPlayerX().equals(c)) status = "Game Ended: Victory";
+                            else status = status = "Game Ended: Loss";
+                        }
+                    }
                 }
             }
-            model1.addRow(new Object[]{c.ip, c.port,status,c.getGameId()});
+            model1.addRow(new Object[]{t.getAddress(c), t.getPort(c), status, c.getGame()});
         }
         DefaultTableModel model2 = (DefaultTableModel) jTable2.getModel();
         model2.setRowCount(0);
-        for(int i=0;i<t.getGamesNum();i++){
-         Game g=t.getGameAt(i);
-         String status;
-         switch(g.getGameStatus()){
-             case RUNNING: status="Running"; break;
-             case WINNER_X: status="Player X Won"; break;
-             case WINNER_O: status="Player O Won"; break;
-             case STALE: status="Stale"; break;
-             case DRAW: status="Opponents disconnected"; break;
-             default: status=""; break;
-         }
-            model2.addRow(new Object[]{g.id, g.x,g.o,status});
+        for (Game g : t.getGames()) {
+            String status;
+            switch (g.getGameStatus()) {
+                case RUNNING:
+                    status = "Running";
+                    break;
+                case WINNER_X:
+                    status = "Player X Won";
+                    break;
+                case WINNER_O:
+                    status = "Player O Won";
+                    break;
+                case STALE:
+                    status = "Stale";
+                    break;
+                case DRAW:
+                    status = "Opponents disconnected";
+                    break;
+                default:
+                    status = "";
+                    break;
+            }
+            model2.addRow(new Object[]{g.getId(), g.getPlayerX(), g.getPlayerO(), status});
         }
-        jLabel6.setText(""+ t.getActiveClients());
-        jLabel8.setText(""+t.getActiveGames());
+        jLabel6.setText("" + t.getActiveClients());
+        jLabel8.setText("" + t.getActiveGames());
     }
 
     @Override
     public void packetReceived() {
         buildTable();
-        ServerReceiverThread s=new ServerReceiverThread(t);
-        s.start();
     }
 
     @Override
@@ -265,5 +285,5 @@ public class ServerGUI extends javax.swing.JFrame implements ServerListener{
         jTextArea1.append(s);
         jTextArea1.setCaretPosition(jTextArea1.getDocument().getLength()); //autoscroll
     }
-   
+
 }

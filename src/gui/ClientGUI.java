@@ -3,8 +3,10 @@ package gui;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import model.ClientListener;
 import model.TicTacToeClient;
 
@@ -22,15 +24,10 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
     /**
      * Creates new form ClientGUI
      */
-    public ClientGUI(TicTacToeClient t) throws Exception {
-        this.t = t;
-        this.addWindowListener(this);
+    public ClientGUI(int port, InetAddress ip, String name) throws Exception {
         initComponents();
-        t.setClientListener(this);
-        boardUpdated();
-        if (!t.isMyTurn()) {
-            new ClientReceiverThread(t, 1).start();
-        }
+        this.t = new TicTacToeClient(port, ip, name, this);
+        this.addWindowListener(this);
     }
 
     /**
@@ -54,7 +51,7 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("JTris UDP - Client");
+        setTitle("JTris TCP - Client");
         setResizable(false);
 
         jButton1.setText("jButton1");
@@ -260,7 +257,7 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
         jButton7.setText("" + t.getBoardAt(6));
         jButton8.setText("" + t.getBoardAt(7));
         jButton9.setText("" + t.getBoardAt(8));
-        jLabel1.setText("My Symbol: " + t.getMe().getSymbol() + " Turn Of: " + t.getTurn());
+        jLabel1.setText("My Symbol: " + t.getMySymbol() + " Turn Of: " + t.getTurn());
     }
 
     @Override
@@ -300,7 +297,6 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
             } catch (IOException ex) {
                 Logger.getLogger(ClientGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
-            new ClientReceiverThread(t, 2).start();
         }
     }
 
@@ -313,8 +309,9 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
     public void windowClosing(WindowEvent e) {
         if (jButton5.isEnabled()) {   //check if buttons are locked
             try {
-                if (!t.disconnectFromServer()) throw new Exception();
+                t.disconnectFromServer();
             } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }
@@ -343,5 +340,22 @@ public class ClientGUI extends javax.swing.JFrame implements ClientListener, Win
     public void close() {
         jLabel1.setText("Opponent gave up!");
         lockButtons();
+    }
+
+    @Override
+    public void opponentFound() {
+        jLabel1.setText("Game is starting...");
+        /* Create and display the form */
+        boardUpdated();
+    }
+
+    @Override
+    public void errorInFindingOpponent() {
+        jLabel1.setText("Connection refused");
+    }
+
+    @Override
+    public void connected() {
+        jLabel1.setText("Connection accepted, waiting for opponent...");
     }
 }

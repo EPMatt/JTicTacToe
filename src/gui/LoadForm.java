@@ -5,16 +5,15 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import model.ClientGUIListener;
-import model.TicTacToeClient;
 
 /**
  * JTicTacToe - LoadForm : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
  * or as an UDP client which can be used to play a TicTacToe game over a network.
+ *
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
-public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
+public class LoadForm extends javax.swing.JFrame {
 
     public LoadForm() {
         initComponents();
@@ -50,11 +49,12 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jSpinner6 = new javax.swing.JSpinner();
-        jLabel8 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("JTris UDP");
+        setTitle("JTris TCP");
         setResizable(false);
 
         jLabel1.setText("Activate service on port no. :");
@@ -149,12 +149,18 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
         jSpinner6.setModel(new javax.swing.SpinnerNumberModel());
         jSpinner6.setValue(9800);
 
-        jLabel8.setText("Connection Status: ");
-
         jButton2.setText("Play");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
+            }
+        });
+
+        jLabel10.setText("Nickname:");
+
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
             }
         });
 
@@ -166,14 +172,9 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jButton2)
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -189,7 +190,15 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 8, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(2, 2, 2)
-                                .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jSpinner5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 100, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -212,11 +221,12 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(jSpinner6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23)
-                .addComponent(jButton2)
-                .addGap(4, 4, 4)
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                .addComponent(jButton2))
         );
 
         jTabbedPane1.addTab("Client", jPanel2);
@@ -239,7 +249,6 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        jLabel8.setText("Connection Status: Connecting...");
         jTabbedPane1.setEnabledAt(0, false);
         int[] ipAdd = new int[4];
         ipAdd[0] = (int) jSpinner2.getValue();
@@ -255,11 +264,16 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
         try {
             ip = (Inet4Address) Inet4Address.getByAddress(ipAddByte);
             int port = (int) jSpinner6.getValue();
-            t = new TicTacToeClient(port, ip);
-            if (t.connect()) {
-                jLabel8.setText("Connection Status: Connection accepted, waiting for opponent...");
-                new ClientWaitingThread(t, this).start();
-            } else jLabel8.setText("Connection Status: Connection refused");
+            String name = jTextField1.getText();
+            java.awt.EventQueue.invokeLater(() -> {
+                try {
+                    new ClientGUI(port,ip,name).setVisible(true);
+                } catch (Exception ex) {
+                    Logger.getLogger(LoadForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            this.setVisible(false);
+
         } catch (UnknownHostException ex) {
             Logger.getLogger(LoadForm.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
@@ -273,23 +287,25 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         jTabbedPane1.setEnabledAt(1, false);
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new ServerGUI((int) jSpinner1.getValue(),(int)jSpinner7.getValue(),jCheckBox1.isSelected(),jCheckBox2.isSelected()).setVisible(true);
-                } catch (IOException ex) {
-                    Logger.getLogger(LoadForm.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new ServerGUI((int) jSpinner1.getValue(), (int) jSpinner7.getValue()).setVisible(true);
+            } catch (IOException ex) {
+                Logger.getLogger(LoadForm.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
         this.setVisible(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -323,13 +339,13 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -341,28 +357,7 @@ public class LoadForm extends javax.swing.JFrame implements ClientGUIListener {
     private javax.swing.JSpinner jSpinner6;
     private javax.swing.JSpinner jSpinner7;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
-    private TicTacToeClient t;
 
-    @Override
-    public void opponentFound() {
-        jLabel8.setText("Connection Status: Game is starting");
-                    /* Create and display the form */
-                    java.awt.EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                new ClientGUI(t).setVisible(true);
-                            } catch (Exception ex) {
-                                Logger.getLogger(LoadForm.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    });
-                    this.setVisible(false); 
-    }
-
-    @Override
-    public void errorInFindingOpponent() {
-        jLabel8.setText("Connection Status: Connection refused");
-    }
-    
 }
