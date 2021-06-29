@@ -12,4 +12,7 @@ public interface ClientListener {
     public void gameLost();
     public void gameStale();
     public void close();
+    public void opponentFound();
+    public void errorInFindingOpponent();
+    public void connected();
 }

@@ -1,15 +1,11 @@
 package model;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import message.BoardUpdateMessage;
-import message.ConnectionMessage;
-import message.DisconnectionMessage;
-import message.Message;
-import message.TickCellMessage;
+import connection.ConnectionThread;
+import connection.MessageHandler;
+import message.*;
 
 /**
  * JTicTacToe - TicTacToeClient : Assignment for Java course. This application can work as an UDP server which can handle multiple TicTacToe games simultaneously,
@@ -18,89 +14,62 @@ import message.TickCellMessage;
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
-public class TicTacToeClient {
+public class TicTacToeClient implements MessageHandler {
 
     public final int serverPort;
     public final InetAddress serverIp;
-    private DatagramSocket clientSocket;
-    private byte[] board;
-    private char turn;
-    private char status;
-    private Client me;
+    private Player me;
     private ClientListener listener;
+    private ConnectionThread connectionThread;
 
-    public TicTacToeClient(int port, InetAddress ip) throws Exception {
+    public TicTacToeClient(int port, InetAddress ip, String name, ClientListener listener) throws Exception {
         this.serverPort = port;
         this.serverIp = ip;
-        this.board = new byte[9];
-        for (byte b : board) {
-            b = 0;
-        }
-        for (int i = 0; i < 65536; i++) {
-            try {
-                clientSocket = new DatagramSocket(i);
-                break;
-            } catch (Exception e) {
-            }
-        }
-        clientSocket.connect(ip, serverPort);
-        me = new Client(clientSocket.getLocalAddress(), clientSocket.getLocalPort());
-        turn = 'X';
-        status = 'R';
+        this.connectionThread = new ConnectionThread(ip, port, this);
+        this.me = new Player(name);
+        this.listener = listener;
+        connectionThread.start();
+        connect();
     }
 
-    public boolean connect() throws IOException {
-        ConnectionMessage outMsg = new ConnectionMessage(Message.REQUEST);
-        send(outMsg);
-        Message inMsg = receiveConnectionMessageFromServer();
-        if (inMsg.isSuccessful()) {
-            return true;
-        }
-        return false;
+    public void connect() throws IOException {
+        ConnectionMessage outMsg = new ConnectionMessage(me.getName());
+        connectionThread.send(outMsg);
     }
 
-    public boolean waitForOpponent() throws IOException {
-        ConnectionMessage inMsg = receiveConnectionMessageFromServer();
-        if (inMsg.purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
-            me.setGameId(inMsg.getGameId());
-            me.setSymbol(inMsg.getSymbol());
-            return true;
+    private void updateTableFromBuffer(GameUpdateMessage msg) {
+        Game game = me.getGame();
+        byte[] b = msg.getBoard();
+        char[] board = new char[b.length];
+        for (int i = 0; i < board.length; i++) {
+            board[i] = (char) b[i];
         }
-        return false;
-    }
-
-    public void getBoardUpdate() throws IOException {
-        BoardUpdateMessage outMsg = new BoardUpdateMessage(Message.REQUEST);
-        send(outMsg);
-        BoardUpdateMessage inMsg = receiveBoardUpdateMessageFromServer();
-        if (inMsg.getStatus() == 'D') {
-            listener.close();
-        } else {
-            updateTableFromBuffer(inMsg);
-        }
-    }
-
-    public void waitForUpdates() throws IOException {
-        BoardUpdateMessage inMsg = receiveBoardUpdateMessageFromServer();
-        if (inMsg.getStatus() == 'D') {
-            listener.close();
-        } else {
-            nextTurn();
-            updateTableFromBuffer(inMsg);
-
-        }
-    }
-
-    private void updateTableFromBuffer(BoardUpdateMessage msg) {
-        board = msg.getBoard();
+        game.setBoard(board);
+        if (game.getTurn() != msg.getTurn()) game.nextTurn();
         listener.boardUpdated();
-        status = (char) msg.getStatus();
-        if (status == me.getSymbol()) {
-            listener.gameWon();
-        } else if (status == 'X' && me.getSymbol() == 'O' || status == 'O' && me.getSymbol() == 'X') {
-            listener.gameLost();
-        } else if (status == 'S') {
-            listener.gameStale();
+        Game.Status status = msg.getStatus();
+        switch (status) {
+            case WINNER_X -> {
+                if (game.getPlayerX().equals(me))
+                    listener.gameWon();
+                else
+                    listener.gameLost();
+            }
+            case WINNER_O -> {
+                if (game.getPlayerO().equals(me))
+                    listener.gameWon();
+                else
+                    listener.gameLost();
+            }
+            case STALE -> {
+                listener.gameStale();
+            }
+            case DRAW -> {
+                listener.close();
+            }
+            default -> {
+                // game is running
+            }
         }
     }
 
@@ -109,77 +78,83 @@ public class TicTacToeClient {
     }
 
     public boolean isMyTurn() {
-        return me.getSymbol() == turn;
+        return me.getGame().getPlayerX().equals(me) && me.getGame().getTurn() == Game.X_SYMBOL || me.getGame().getPlayerO().equals(me) && me.getGame().getTurn() == Game.O_SYMBOL;
     }
 
     public void tick(int cell) throws IOException {
-        TickCellMessage outMsg = new TickCellMessage(Message.REQUEST);
-        outMsg.setCell((byte) cell);
-        send(outMsg);
-        TickCellMessage inMsg = receiveTickCellMessageFromServer();
-        if (!inMsg.isSuccessful()) {
-            throw new IllegalStateException("Tick error!");
-        }
+        // update local game
+        me.getGame().tick(cell);
+        // send message to server
+        TickCellMessage outMsg = new TickCellMessage(Message.Purpose.REQUEST, cell);
+        connectionThread.send(outMsg);
     }
 
     public char getBoardAt(int index) {
-        return (char) board[index];
+        return me.getGame().getAt(index);
     }
 
-    private void nextTurn() {
-        turn = (turn == 'X') ? 'O' : 'X';
-    }
-
-    public Client getMe() {
+    public Player getMe() {
         return me;
     }
 
     public char getTurn() {
-        return turn;
+        return me.getGame().getTurn();
     }
 
-    public char getGameStatus() {
-        return status;
+    public Game.Status getGameStatus() {
+        return me.getGame().getGameStatus();
     }
 
-    private void send(Message m) throws IOException {
-        clientSocket.send(new DatagramPacket(m.getBuf(), m.getBuf().length, serverIp, serverPort));
+    public void disconnectFromServer() throws IOException {
+        DisconnectionMessage d = new DisconnectionMessage(Message.Purpose.REQUEST);
+        connectionThread.send(d);
+        connectionThread.setRunning(false);
+        try {
+            connectionThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private Message receiveFromServer() throws IOException {
-        DatagramPacket d = new DatagramPacket(new byte[Message.MSG_SIZE], Message.MSG_SIZE);
-        clientSocket.receive(d);
-        return new Message(d.getData());
+    @Override
+    public void handle(Message m, ConnectionThread sender) {
+        if (m instanceof GameUpdateMessage) {
+            GameUpdateMessage inMsg = (GameUpdateMessage) m;
+            updateTableFromBuffer(inMsg);
+        } else if (m instanceof TickCellMessage) {
+            TickCellMessage inMsg = (TickCellMessage) m;
+            if (!inMsg.isSuccessful()) {
+                throw new IllegalStateException("Tick error!");
+            }
+        } else if (m instanceof ConnectionMessage) {
+            ConnectionMessage inMsg = (ConnectionMessage) m;
+            if (inMsg.isSuccessful()) {
+                listener.connected();
+            }
+        } else if (m instanceof GameJoinMessage) {
+            GameJoinMessage inMsg = (GameJoinMessage) m;
+            // join the game
+            Player x;
+            Player o;
+            if (inMsg.getSymbol() == Game.X_SYMBOL) {
+                x = me;
+                o = inMsg.getOpponent();
+            } else {
+                x = inMsg.getOpponent();
+                o = me;
+            }
+            Game g = new Game(x, o, inMsg.getGameId());
+            x.setGame(g);
+            o.setGame(g);
+            listener.opponentFound();
+            // TODO send confirmation to server
+        }
     }
 
-    private BoardUpdateMessage receiveBoardUpdateMessageFromServer() throws IOException {
-        Message t = receiveFromServer();
-        checkMessageType(t, Message.Type.BOARD_UPDATE);
-        return new BoardUpdateMessage(t.getBuf());
+
+    public char getMySymbol() {
+        if (me.getGame() == null) return ' ';
+        if (me.getGame().getPlayerX().equals(me)) return Game.X_SYMBOL;
+        return Game.O_SYMBOL;
     }
-
-    private ConnectionMessage receiveConnectionMessageFromServer() throws IOException {
-        Message t = receiveFromServer();
-        checkMessageType(t, Message.Type.CONNECTION);
-        return new ConnectionMessage(t.getBuf());
-    }
-
-    private TickCellMessage receiveTickCellMessageFromServer() throws IOException {
-        Message t = receiveFromServer();
-        checkMessageType(t, Message.Type.TICK);
-        return new TickCellMessage(t.getBuf());
-    }
-
-    public boolean disconnectFromServer() throws IOException {
-        DisconnectionMessage d = new DisconnectionMessage(Message.REQUEST);
-        send(d);
-        DisconnectionMessage resp = new DisconnectionMessage(receiveFromServer().getBuf());
-        return resp.isSuccessful();
-
-    }
-
-    private void checkMessageType(Message m, Message.Type t) throws IOException {
-        if (m.type != t) throw new IOException();
-    }
-
 }

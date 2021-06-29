@@ -1,5 +1,7 @@
 package model;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 
 /**
@@ -11,6 +13,7 @@ import java.util.Arrays;
  */
 public class Game {
 
+
     public enum Status {
         WINNER_X('X'),
         WINNER_O('O'),
@@ -18,7 +21,7 @@ public class Game {
         DRAW('D'),
         RUNNING('R');
 
-        private char code;
+        private final char code;
 
         Status(char code) {
             this.code = code;
@@ -31,36 +34,44 @@ public class Game {
             throw new IllegalArgumentException("No Game status for code (" + code + ") found");
         }
 
-        public char getCode(){
+        public char getCode() {
             return code;
         }
     }
 
 
-    public final int id;
-    public final Client x;
-    public final Client o;
-    private char[] board;
-    private char turn;
+    private final int id;
+    private final Player x;
+    private final Player o;
+    private final char[] board = new char[9];
+    private char turn = X_SYMBOL;
     public static final char X_SYMBOL = 'X';
     public static final char O_SYMBOL = 'O';
-    private boolean active;
+    private boolean draw = false;
 
-    public Game(Client a, Client b, int id) {
-        this.x = a;
-        this.o = b;
-        x.setSymbol(X_SYMBOL);
-        o.setSymbol(O_SYMBOL);
-        this.board = new char[9];
+    public Game(@NotNull Player x, @NotNull Player o, int id) {
+        this.x = x;
+        this.o = o;
         this.id = id;
-        this.turn = X_SYMBOL;
-        this.active = true;
     }
 
-    public void tick(byte cell) {
-        if (cell < 0 || cell > 9) throw new IndexOutOfBoundsException();
+    public void tick(int cell) {
+        if (cell < 0 || cell > 9) throw new IndexOutOfBoundsException("Provided an invalid cell index");
+        if (board[cell] != 0) throw new IllegalArgumentException("Cell is already ticked");
         board[cell] = turn;
         nextTurn();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public Player getPlayerX() {
+        return x;
+    }
+
+    public Player getPlayerO() {
+        return o;
     }
 
     public char getTurn() {
@@ -75,6 +86,7 @@ public class Game {
         return board[cell];
     }
 
+    @NotNull
     public Status getGameStatus() {
         Status status = Status.RUNNING;
         byte ticked = 0;
@@ -84,32 +96,50 @@ public class Game {
         if (isWinner(X_SYMBOL)) status = Status.WINNER_X;    //X: winner x
         else if (isWinner(O_SYMBOL)) status = Status.WINNER_O;  //O: winner o
         else if (ticked == 9) status = Status.STALE;  //S: stale
-        else if (!active) status = Status.DRAW;
+        else if (draw) status = Status.DRAW;
         //else R: still running
         return status;
     }
 
     private boolean isWinner(char player) {
-        if (board[0] == board[1] && board[1] == board[2] && board[2] == player) return true;
-        if (board[3] == board[4] && board[4] == board[5] && board[5] == player) return true;
-        if (board[6] == board[7] && board[7] == board[8] && board[8] == player) return true;
-        if (board[0] == board[3] && board[3] == board[6] && board[6] == player) return true;
-        if (board[1] == board[4] && board[4] == board[7] && board[7] == player) return true;
-        if (board[2] == board[5] && board[5] == board[8] && board[8] == player) return true;
-        if (board[0] == board[4] && board[4] == board[8] && board[8] == player) return true;
-        if (board[2] == board[4] && board[4] == board[6] && board[6] == player) return true;
-        return false;
+        boolean win = false, windiag1 = true, windiag2 = true;
+        for (int i = 0; i < 3 && !win; i++) {
+            boolean winrow = true;
+            for (int j = 0; j < 3 && winrow; j++) {
+                winrow = board[i * 3 + j] == player;
+
+            }
+            boolean wincol = true;
+            for (int j = 0; j < 3 && wincol; j++) {
+                wincol = board[j * 3 + i] == player;
+            }
+            win = winrow || wincol;
+            if (board[i * 3 + i] != player) windiag1 = false;
+            if (board[8 - (i * 3 + i)] != player) windiag2 = false;
+        }
+        return win || windiag1 || windiag2;
     }
 
     public char[] getBoard() {
         return Arrays.copyOf(board, 9);
     }
 
-    public void setInactive() {
-        this.active = false;
+    public void draw() {
+        this.draw = true;
     }
 
-    public boolean isActive() {
-        return active;
+    public void setBoard(char[] board) {
+        System.arraycopy(board, 0, this.board, 0, 9);
+    }
+
+    public boolean isDraw() {
+        return draw;
+    }
+
+    @Override
+    public String toString() {
+        return "Game{" +
+                "id=" + id +
+                '}';
     }
 }
