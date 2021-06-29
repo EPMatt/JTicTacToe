@@ -2,7 +2,6 @@ package message;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -12,13 +11,14 @@ import java.util.Arrays;
  * @author Matteo Agnoletto <epmatt>
  * @version 1.0.0
  */
-public class Message {
+abstract public class Message {
 
     public enum Type {
         CONNECTION((byte) 0),
         TICK((byte) 1),
-        BOARD_UPDATE((byte) 2),
-        DISCONNECTION((byte) 3);
+        GAME_UPDATE((byte) 2),
+        DISCONNECTION((byte) 3),
+        JOIN_GAME((byte) 4);
 
         private final byte code;
 
@@ -44,8 +44,7 @@ public class Message {
 
     public enum Purpose {
         REQUEST((byte) 0),
-        RESPONSE((byte) 1),
-        CONNECTION_APPROVAL_RESPONSE((byte) 2);
+        RESPONSE((byte) 1);
 
         private final byte code;
 
@@ -65,19 +64,16 @@ public class Message {
         }
     }
 
-    public static final int MSG_SIZE = 13;
-    public static final byte REQUEST = 0;
-    public static final byte RESPONSE = 1;
-    public static final byte CONNECTION_APPROVAL_RESPONSE = 2;
+    public static final int PREAMBLE_SIZE = 4;
 
     private static final int INDEX_TYPE = 0;
     private static final int INDEX_PURPOSE = 1;
     private static final int INDEX_STATUS = 2;
-    protected static final int INDEX_DATA = 3;
+    public static final int INDEX_DATA_LENGTH = 3;
+    public static final int INDEX_DATA = 4;
+
 
     private byte[] buf;
-    public final Type type;
-    public final byte purpose;
 
     /**
      * Construct a generic Message from a byte buffer
@@ -85,7 +81,7 @@ public class Message {
      * @param buf the buffer to construct the Message from
      */
     public Message(byte[] buf) {
-        this(Type.fromCode(buf[INDEX_TYPE]), buf[INDEX_PURPOSE]);
+        this(Type.fromCode(buf[INDEX_TYPE]), Purpose.fromCode(buf[INDEX_PURPOSE]), buf.length - PREAMBLE_SIZE);
         this.buf = buf;
     }
 
@@ -99,8 +95,9 @@ public class Message {
      */
     public Message(byte[] buf, Type type) throws WrongMessageTypeException {
         this(buf);
-        if (this.type != type) throw new WrongMessageTypeException();
+        if (getType() != type) throw new WrongMessageTypeException();
     }
+
 
     /**
      * Construct an empty Message with the given type and purpose
@@ -108,23 +105,23 @@ public class Message {
      * @param type
      * @param purpose
      */
-    public Message(@NotNull Type type, byte purpose) {
-        this.buf = new byte[MSG_SIZE];
-        this.type = type;
-        buf[INDEX_TYPE] = this.type.getCode();
-        this.purpose = purpose;
-        buf[INDEX_PURPOSE] = this.purpose;
+    public Message(@NotNull Type type, Purpose purpose, int dataLen) {
+        this.buf = new byte[PREAMBLE_SIZE + dataLen];
+        buf[INDEX_TYPE] = type.getCode();
+        buf[INDEX_PURPOSE] = purpose.getCode();
+        buf[INDEX_DATA_LENGTH] = (byte) dataLen;
     }
 
     public void setAsError() {
-        if (purpose == Message.RESPONSE)
+        if (getPurpose() == Purpose.RESPONSE)
             buf[INDEX_STATUS] = 0;
         else
             throw new UnsupportedOperationException();
     }
 
+
     public void setSuccessful() {
-        if (purpose == Message.RESPONSE)
+        if (getPurpose() == Purpose.RESPONSE)
             buf[INDEX_STATUS] = 1;
         else
             throw new UnsupportedOperationException();
@@ -139,10 +136,39 @@ public class Message {
     }
 
     public byte[] getBuf() {
-        return Arrays.copyOf(buf, MSG_SIZE);
+        return Arrays.copyOf(buf, buf.length);
     }
 
     public boolean isSuccessful() {
         return buf[INDEX_STATUS] == 1;
+    }
+
+
+    public Type getType() {
+        return Type.fromCode(buf[INDEX_TYPE]);
+    }
+
+    public Purpose getPurpose() {
+        return Purpose.fromCode(buf[INDEX_PURPOSE]);
+    }
+
+    /**
+     * Construct a message from a byte buffer
+     *
+     * @param buf
+     * @return an instance of a Message subclass, matching the type provided in the buffer
+     */
+    public static Message fromBuffer(byte[] buf) throws WrongMessageTypeException {
+        Message m;
+        Type t = Type.fromCode(buf[INDEX_TYPE]);
+        switch (t) {
+            case CONNECTION -> m = new ConnectionMessage(buf);
+            case TICK -> m = new TickCellMessage(buf);
+            case GAME_UPDATE -> m = new GameUpdateMessage(buf);
+            case JOIN_GAME -> m = new GameJoinMessage(buf);
+            case DISCONNECTION -> m = new DisconnectionMessage(buf);
+            default -> throw new WrongMessageTypeException();
+        }
+        return m;
     }
 }

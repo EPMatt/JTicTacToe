@@ -10,21 +10,27 @@ package message;
 public class TickCellMessage extends Message {
     private static final int INDEX_CELL = INDEX_DATA;
 
-    public TickCellMessage(byte purpose) {
-        super(Message.Type.TICK, purpose);
+    public TickCellMessage(Purpose purpose) {
+        super(Type.TICK, purpose, 0);
+    }
+
+    public TickCellMessage(Purpose purpose, int cell){
+        super(Type.TICK,purpose,1);
+        setCell(cell);
     }
 
     public TickCellMessage(byte[] buf) throws WrongMessageTypeException {
         super(buf, Type.TICK);
     }
 
-    public void setCell(byte cell) {
-        if (purpose == Message.REQUEST) setAt(INDEX_CELL, cell);
-        else throw new UnsupportedOperationException();
+    private void setCell(int cell) {
+        if (getPurpose() == Purpose.REQUEST) setAt(INDEX_CELL, (byte) cell);
+        else
+            throw new UnsupportedOperationException();
     }
 
     public byte getRequiredCell() {
-        if (purpose == Message.REQUEST) return getAt(INDEX_CELL);
+        if (getPurpose() == Purpose.REQUEST) return getAt(INDEX_CELL);
         else throw new UnsupportedOperationException();
     }
 }

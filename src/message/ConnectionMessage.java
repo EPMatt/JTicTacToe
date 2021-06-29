@@ -12,43 +12,31 @@ import java.util.Arrays;
  * @version 1.0.0
  */
 public class ConnectionMessage extends Message {
-    private static final int INDEX_ID = INDEX_DATA;
-    private static final int INDEX_SYMBOL = INDEX_DATA + 4;
 
-    public ConnectionMessage(byte purpose) {
-        super(Message.Type.CONNECTION, purpose);
+    public final int INDEX_NAME_LENGTH = INDEX_DATA;
+    public final int INDEX_NAME = INDEX_DATA + 1;
+
+    public ConnectionMessage(Purpose purpose) {
+        super(Message.Type.CONNECTION, purpose, 0);
+    }
+
+    public ConnectionMessage(String name) {
+        super(Type.CONNECTION, Purpose.REQUEST, 1 + name.length());
+        setAt(INDEX_NAME_LENGTH, (byte) name.length());
+        for (int i = 0; i < name.length(); i++)
+            setAt(INDEX_NAME + i, (byte) name.charAt(i));
     }
 
     public ConnectionMessage(byte[] buf) throws WrongMessageTypeException {
-        super(buf,Type.CONNECTION);
+        super(buf, Type.CONNECTION);
     }
 
-    public void setGameId(int id) {
-        if (purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
-            byte[] arrayId = Utils.toByteArray(id);
-            for (int i = 0; i < 4; i++)
-                setAt(INDEX_ID + i, arrayId[i]);
-        } else throw new UnsupportedOperationException();
-    }
-
-    public int getGameId() {
-        if (purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
-            byte[] arrayId = new byte[4];
-            for (int i = 0; i < 4; i++)
-                arrayId[i] = getAt(INDEX_ID + i);
-            return Utils.byteArrayToInt(arrayId);
-        } else throw new UnsupportedOperationException();
-    }
-
-    public void setSymbol(char symbol) {
-        if (purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
-            setAt(INDEX_SYMBOL, (byte) symbol);
-        } else throw new UnsupportedOperationException();
-    }
-
-    public char getSymbol() {
-        if (purpose == Message.CONNECTION_APPROVAL_RESPONSE) {
-            return (char) getAt(INDEX_SYMBOL);
-        } else throw new UnsupportedOperationException();
+    public String getName() {
+        int len = getAt(INDEX_NAME_LENGTH);
+        char[] buf = new char[len];
+        for (int i = 0; i < len; i++)
+            buf[i] = (char) getAt(INDEX_NAME + i);
+        System.out.println("Received name: " + Arrays.toString(buf));
+        return new String(buf);
     }
 }

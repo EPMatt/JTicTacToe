@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DisconnectionMessage extends Message {
 
-    public DisconnectionMessage(byte purpose) {
-        super(Message.Type.DISCONNECTION, purpose);
+    public DisconnectionMessage(Purpose purpose) {
+        super(Message.Type.DISCONNECTION, purpose,0);
     }
 
     public DisconnectionMessage(byte[] buf) throws WrongMessageTypeException {
